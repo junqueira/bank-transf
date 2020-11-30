@@ -1,0 +1,50 @@
+version: '3.1'
+
+
+services:
+  postgres:
+    image: postgres
+    restart: always
+    environment:
+      POSTGRES_MULTIPLE_DATABASES: bank-transf
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_HOST_AUTH_METHOD: trust
+      PGDATA: $PWD/docker/data/pgdata
+    ports:
+      - "5432:5432"
+    volumes:
+      - $PWD/docker/data/pgdata:/var/lib/postgresql/data
+      - $PWD/docker/scripts/create-databases.sh:/docker-entrypoint-initdb.d/init.sh
+      # - ./docker/data/pgdata:/var/lib/postgresql/data
+
+#  mongo:
+#    image: mongo
+#    container_name: bank-java-mongodb
+#    ports:
+#      - 27017:27017
+#    command: mongod --logpath=/dev/null # --quiet
+#    networks:
+#      - spring-mongo-net
+
+  springboot:
+    build: .
+    container_name: bank-transf
+    ports:
+      - 8080:8080
+    depends_on:
+      - postgres
+#      - mongo
+    links:
+      - postgres
+#      - mongo
+#    networks:
+#      - spring-mongo-net
+
+networks:
+  spring-mongo-net:
+    driver: bridge
+
+volumes:
+  postgres-vol:
+  # - $PWD/docker/data/pgdata
